@@ -333,7 +333,7 @@ DailyRotateFile.prototype.query = function (options, callback) {
 // Returns a log stream for this transport. Options object is optional.
 //
 DailyRotateFile.prototype.stream = function (options) {
-  var file = path.join(this.dirname, this._basename + this.getFormattedDate()),
+  var file = path.join(this.dirname,  this.getFormattedDate() + this._basename),
       options = options || {},
       stream = new Stream;
 
@@ -360,6 +360,7 @@ DailyRotateFile.prototype.stream = function (options) {
   if(stream.resume){
     stream.resume();
   }
+
 
   return stream;
 };
@@ -554,7 +555,10 @@ DailyRotateFile.prototype._createStream = function () {
 //
 DailyRotateFile.prototype._getFile = function (inc) {
   var self = this,
-      filename = this._basename + this.getFormattedDate(),
+      first = this.getFormattedDate().split(''),
+      date = first.splice(1).join(''),
+      filename = date +'-' + this._basename,
+      //filename = this._basename + this.getFormattedDate(),
       remaining;
 
   if (inc) {
@@ -566,16 +570,16 @@ DailyRotateFile.prototype._getFile = function (inc) {
     if (this.maxFiles && (this._created >= (this.maxFiles - 1))) {
       remaining = this._created - (this.maxFiles - 1);
       if (remaining === 0) {
+        console.log(fs.unlinkSync(path.join(this.dirname, filename)));
         fs.unlinkSync(path.join(this.dirname, filename));
       }
       else {
-        fs.unlinkSync(path.join(this.dirname, filename + '.' + remaining));
+        fs.unlinkSync(path.join(this.dirname, filename + '' + remaining));
       }
     }
 
     this._created += 1;
   }
-
   return this._created
     ? filename + '.' + this._created
     : filename;
